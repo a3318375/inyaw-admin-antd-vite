@@ -1,13 +1,33 @@
-import { createBrowserRouter } from 'react-router-dom'
-import NotFound from '@/pages/notFound.tsx'
-import Layout from '@/layout'
-export const router = createBrowserRouter([ {
-    path: '/',
-    Component: Layout,
-    children: [],
-}, {
-    path: '*',
-    Component: NotFound,
-} ]);
+// Generouted, changes to this file will be overriden
+/* eslint-disable */
 
-export default router
+import { components, hooks, utils } from '@generouted/react-router/client'
+
+export type Path =
+    | `/`
+    | `/500`
+    | `/dynamic`
+    | `/dynamic/:id`
+    | `/dynamic/:id/detail`
+    | `/login`
+    | `/nested`
+    | `/nested/nested-1`
+    | `/nested/nested-1/nested-1-1`
+    | `/related`
+    | `/dashboard`
+    | `/loading`
+    | `/notFound`
+    | `/page1`
+    | `/page2`
+    | `/page3`
+
+export type Params = {
+    '/dynamic/:id': { id: string }
+    '/dynamic/:id/detail': { id: string }
+}
+
+export type ModalPath = never
+
+export const { Link, Navigate } = components<Path, Params>()
+export const { useModals, useNavigate, useParams } = hooks<Path, Params, ModalPath>()
+export const { redirect } = utils<Path, Params>()

@@ -1,25 +1,12 @@
 // 模拟获取管理员菜单
-import { RouterType } from "@/types";
 
-export const getAdminMenus: () => Promise<RouterType[]> = () => {
+export const getAdminMenus: () => Promise<string[]> = () => {
     return new Promise((resolve) => {
         window.setTimeout(() => {
             resolve([
-                {
-                    name: 'page1',
-                    path: '/page1',
-                    filePath: '/page1/index.tsx',
-                },
-                {
-                    name: 'page2',
-                    path: '/page2',
-                    filePath: '/page2/index.tsx',
-                },
-                {
-                    name: 'page3',
-                    path: '/page3',
-                    filePath: '/page3/index.tsx',
-                },
+                '/page1',
+                '/page2',
+                '/page3',
             ]);
         }, 1000);
     });

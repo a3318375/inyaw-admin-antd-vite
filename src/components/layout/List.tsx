@@ -1,5 +1,5 @@
 import { theme } from "antd";
-import Item from '@/layout/components/Item'
+import Item from '@/components/layout/Item'
 import React from "react";
 
 export default function List(props: { title: string; style?: React.CSSProperties }) {

@@ -1,10 +1,8 @@
-import { Suspense, useContext, useState } from 'react';
-import { Outlet, useMatches } from 'react-router-dom';
-import { RouterContext } from '@/router/routerContext.ts';
+import { Suspense, useState } from 'react';
+import { Outlet, useNavigate } from 'react-router-dom';
 import { Loading } from '@/pages/loading';
 import type { ProSettings } from '@ant-design/pro-components';
 import {
-    getMenuData,
     PageContainer,
     ProConfigProvider,
     ProLayout,
@@ -17,24 +15,18 @@ import {
     QuestionCircleFilled,
 } from '@ant-design/icons';
 import { ConfigProvider, Dropdown } from "antd";
-import MenuCard from '@/layout/components/MenuCard'
-import SearchInput from '@/layout/components/SearchInput'
+import SearchInput from '@/components/layout/SearchInput'
+import http from "@/services/axios.ts";
+import { useTokenStore } from "@/hook/useTokenStore";
+import { isPublicPath } from "@/router/publicPath";
 
-
-export default function Layout() {
-    const { menus } = useContext(RouterContext);
-    // 获取匹配到的路由
-    const matches = useMatches();
-    console.log(1111, matches)
-
-    // 匹配的路由返回的是个数组，默认最后一个就是当前路由。
-    // if (matches.length && !menus.some(menu => matches[matches.length - 1].pathname === menu.route)) {
-    //     return (
-    //         <div>403</div>
-    //     )
-    // }
-
-    const { menuData } = getMenuData(menus);
+export default function BaseLayout() {
+    const navigate = useNavigate()
+    const token = useTokenStore.getState().token
+    console.log(2222, token, !isPublicPath())
+    if(!isPublicPath() && !token){
+        navigate('/login')
+    }
 
     const [ settings, setSetting ] = useState<Partial<ProSettings> | undefined>({
         fixSiderbar: true,
@@ -46,18 +38,7 @@ export default function Layout() {
     if (typeof document === 'undefined') {
         return <div/>;
     }
-
     return (
-        // <div style={{display: 'flex', gap: 20}}>
-        //     <ul>
-        //         {menus.map(menu => (
-        //             <li key={menu.route}><Link to={menu.route}>{menu.name}</Link></li>
-        //         ))}
-        //     </ul>
-        //     <Suspense fallback={<Loading/>}>
-        //         <Outlet/>
-        //     </Suspense>
-        // </div>
         <div
             id="test-pro-layout"
             style={{
@@ -93,8 +74,10 @@ export default function Layout() {
                                 width: '331px',
                             },
                         ]}
-                        route={{
-                            routes: menuData
+                        menu={{
+                            request: async () => {
+                                return await http.get('/api/getMenuList')
+                            },
                         }}
                         location={{
                             pathname,
@@ -139,25 +122,6 @@ export default function Layout() {
                                 <GithubFilled key="GithubFilled"/>,
                             ];
                         }}
-                        headerTitleRender={(logo, title, _) => {
-                            const defaultDom = (
-                                <a>
-                                    {logo}
-                                    {title}
-                                </a>
-                            );
-                            if (typeof window === 'undefined') return defaultDom;
-                            if (document.body.clientWidth < 1400) {
-                                return defaultDom;
-                            }
-                            if (_.isMobile) return defaultDom;
-                            return (
-                                <>
-                                    {defaultDom}
-                                    <MenuCard/>
-                                </>
-                            );
-                        }}
                         menuFooterRender={(props) => {
                             if (props?.collapsed) return undefined;
                             return (
@@ -177,7 +141,8 @@ export default function Layout() {
                             <div
                                 onClick={() => {
                                     console.log(333, item)
-                                    setPathname(item.path || '/welcome');
+                                    setPathname(item.path || '/welcome')
+                                    navigate(item.path || '/welcome')
                                 }}
                             >
                                 {dom}
@@ -201,6 +166,9 @@ export default function Layout() {
                                 type: 'editable-card',
                                 hideAdd: true,
                                 onEdit: (e, action) => console.log(e, action),
+                            }}
+                            token={{
+                                paddingBlockPageContainerContent: 0,
                             }}
                         >
                             <Suspense fallback={<Loading/>}>

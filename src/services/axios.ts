@@ -1,13 +1,12 @@
 import type { AxiosInstance, AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from 'axios'
 import axios, { AxiosError } from 'axios'
-import { useTokenStore } from "@/hook/useTokenStore.tsx";
-import { message as Message } from 'antd';
-import { useNavigate } from "react-router-dom";
+import { useTokenStore } from "@/hook/useTokenStore"
+import { message as Message } from '@/components/AntdStatic'
+import { useNavigate } from "react-router-dom"
 
 interface HttpResponse {
     data: never
     code: number
-    status: number
     message?: string
 }
 
@@ -18,7 +17,7 @@ const api: AxiosInstance = axios.create({
 })
 
 api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
-    const token = useTokenStore((state) => state.token)
+    const token = useTokenStore.getState().token
     token && (config.headers.Authorization = ("Bearer " + token))
     return config
 }, (error: AxiosError) => {
@@ -26,9 +25,9 @@ api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
 })
 
 
-api.interceptors.response.use((response: AxiosResponse<HttpResponse>) => {
-    const { code, data, message } = response.data
-    if (code === 200) {
+api.interceptors.response.use((response: AxiosResponse) => {
+    const { code, data } = response.data
+    if (code === 1) {
         return data
     }else if(code === 401) {
         const naigate = useNavigate()
@@ -36,8 +35,6 @@ api.interceptors.response.use((response: AxiosResponse<HttpResponse>) => {
             naigate('/login')
         }, 300)
     }
-    Message.error(message)
-    return Promise.reject(new Error(message))
 }, (error: AxiosError<HttpResponse>) => {
     Message.error(error.message)
     return Promise.reject(error)
@@ -45,10 +42,10 @@ api.interceptors.response.use((response: AxiosResponse<HttpResponse>) => {
 
 
 const http = {
-    get<T = never>(url: string, config?: AxiosRequestConfig): Promise<T> {
+    get<T = HttpResponse>(url: string, config?: AxiosRequestConfig): Promise<T> {
         return api.get(url, config)
     },
-    post<T = never>(url: string, data?: object, config?: AxiosRequestConfig): Promise<T> {
+    post<T = HttpResponse>(url: string, data?: object, config?: AxiosRequestConfig): Promise<T> {
         return api.post(url, data, config)
     },
     put<T = never>(url: string, data?: object, config?: AxiosRequestConfig): Promise<T> {
