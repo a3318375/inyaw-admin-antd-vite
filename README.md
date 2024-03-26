@@ -3,9 +3,7 @@
 <div align="center">中后台管理系统通用模板</div>
 
 <p align="center">
-  <a href="https://strivelen.github.io/fine-admin/">在线演示</a>
-  &nbsp; | &nbsp;
-  <a href="https://strivelen.github.io/fine-admin-docs/">在线文档</a>
+  <a href="https://a3318375.github.io/inyaw-admin-antd-vite">在线演示</a>
 </p>
 
 ### ✨ 特性
@@ -15,7 +13,7 @@
 - 👍 使用了[axios](https://www.axios-http.cn/) 用于请求，感觉就是比较轻量级，用起来爽。
 - 🌏 使用 [zustand](https://zustand-demo.pmnd.rs/) 作为状态管理，一直不知道这玩意有啥用，感觉localstore啥的也一样啊。
 - ☀  使用了[tailwindcss](https://tailwindcss.com/) 框架，但是多半没啥用，因为对于中后台没啥css要写。
-- 🖥 使用了mock模拟数据
+- 🖥 使用了mock和apifox模拟数据
 - 🛡 使用 **TypeScript** 开发，毕竟我个做后端的，感觉ts更靠谱。
 
 ### 📦 快速开始
