@@ -12,7 +12,7 @@ interface HttpResponse {
 
 // 创建axios实例对象
 const api: AxiosInstance = axios.create({
-    //baseURL: import.meta.env.BASE_URL,
+    baseURL: import.meta.env.VITE_API_BASE_URL,
     timeout: 10 * 1000
 })
 
