@@ -7,7 +7,7 @@ import {
     WeiboOutlined,
 } from '@ant-design/icons';
 import {
-    LoginFormPage,
+    LoginFormPage, MenuDataItem,
     ProFormCaptcha,
     ProFormCheckbox,
     ProFormText,
@@ -19,6 +19,7 @@ import { useState } from 'react';
 import http from "@/services/axios.ts";
 import { useNavigate } from "react-router-dom";
 import { useTokenStore } from "@/hook/useTokenStore.tsx";
+import {useMenuOneStore, useMenuStore} from "@/hook/useMenuStore.tsx";
 
 type LoginType = 'phone' | 'account';
 
@@ -32,6 +33,8 @@ const iconStyles: CSSProperties = {
 export default function Login() {
     const naigate = useNavigate()
     const tokenHook = useTokenStore()
+    const menuHook = useMenuStore()
+    const menuOneHook = useMenuOneStore()
     const handleSubmit = async (values: API.LoginParams) => {
         try {
             // 登录
@@ -40,11 +43,15 @@ export default function Login() {
                 tokenHook.setToken(token)
                 message.success('登录成功！');
                 const paw = useTokenStore.getState().token
-                console.log(3333, paw)
+                console.log(111, paw)
                 const userInfo = await http.get('/api/getUserInfo');
-                if (userInfo) {
-                    console.log(111, userInfo)
-                }
+                console.log(222, userInfo)
+                const menuList = await http.get<MenuDataItem[]>('/api/getMenuList')
+                console.log(333, userInfo)
+                const allChildren: MenuDataItem[] = getAllChildren(menuList);
+                menuHook.setMenu(menuList)
+                menuOneHook.setMenu(allChildren)
+
                 const urlParams = new URL(window.location.href).searchParams;
                 naigate(urlParams.get('redirect') || '/');
                 return;
@@ -53,6 +60,12 @@ export default function Login() {
             console.log(error);
             message.error('登录失败，请重试！');
         }
+    }
+    const getAllChildren: (items: MenuDataItem[]) => any[] = (items: MenuDataItem[]) => {
+        return items.flatMap(item => {
+            const { routes = [], ...rest } = item;
+            return [ rest, ...getAllChildren(routes) ];
+        });
     }
     const items = [
         { label: '账户密码登录', key: 'account',  },

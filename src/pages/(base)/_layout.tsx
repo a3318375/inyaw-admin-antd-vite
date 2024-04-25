@@ -1,6 +1,5 @@
-import { Suspense, useState } from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
-import { Loading } from '@/pages/loading';
+import { useMemo, useState } from 'react';
+import { useLocation, useMatches, useNavigate, useOutlet } from 'react-router-dom';
 import type { ProSettings } from '@ant-design/pro-components';
 import {
     PageContainer,
@@ -16,15 +15,103 @@ import {
 } from '@ant-design/icons';
 import { ConfigProvider, Dropdown } from "antd";
 import SearchInput from '@/components/layout/SearchInput'
-import http from "@/services/axios.ts";
 import { useTokenStore } from "@/hook/useTokenStore";
 import { isPublicPath } from "@/router/publicPath";
+import { useMenuOneStore, useMenuStore } from "@/hook/useMenuStore.tsx";
+
+export interface KeepAliveTab {
+    title: string;
+    routePath: string;
+    key: string;
+    pathname: string;
+    icon?: any;
+    children: any;
+}
 
 export default function BaseLayout() {
+    const [ tabs, setTabs ] = useState<KeepAliveTab[]>([]);
+    const [ activeKey, setActiveKey ] = useState('');
+    const [ routeList, setRouteList ] = useState<string[]>([]);
     const navigate = useNavigate()
+    const onTabsChange = (newActiveKey: string) => {
+        setActiveKey(newActiveKey);
+    };
+    const menuStore = useMenuStore()
+    const menuOneStore = useMenuOneStore()
+
+    const matches = useMatches();
+    const children = useOutlet();
+    const { pathname } = useLocation();
+    if(activeKey === '') {
+        setActiveKey(pathname);
+    }
+    if(!routeList.includes(pathname)){
+        setRouteList([ ...routeList, pathname ]);
+
+        const lastRoute = matches.at(-1);
+        const lastRouteName = lastRoute?.pathname !== '/' && lastRoute?.pathname.endsWith("/") ? lastRoute.pathname.substring(0,lastRoute.pathname.length -1): lastRoute?.pathname
+        if(lastRouteName?.includes('/add')){
+            const existKeepAliveTab = tabs.find(o => o.routePath === pathname);
+            // 如果不存在则需要插入
+            if (!existKeepAliveTab) {
+                setTabs([ ...tabs, {
+                    title: '新增',
+                    key: new Date().getTime().toString(),
+                    routePath: pathname,
+                    pathname,
+                    children,
+                } ]);
+                setActiveKey(pathname);
+            }
+        }else{
+            const menuObj = menuOneStore.menu.find(o => o.path === lastRouteName);
+            const existKeepAliveTab = tabs.find(o => o.routePath === menuObj?.path);
+            // 如果不存在则需要插入
+            if (!existKeepAliveTab && menuObj) {
+                setTabs([ ...tabs, {
+                    title: menuObj.name || '',
+                    key: new Date().getTime().toString(),
+                    routePath: menuObj?.path || '/',
+                    pathname,
+                    children,
+                } ]);
+                setActiveKey(pathname);
+            }
+        }
+
+        const menuObj = menuOneStore.menu.find(o => o.path === lastRouteName);
+        const existKeepAliveTab = tabs.find(o => o.routePath === menuObj?.path);
+        // 如果不存在则需要插入
+        if (!existKeepAliveTab && menuObj) {
+            setTabs([ ...tabs, {
+                title: menuObj.name || '',
+                key: new Date().getTime().toString(),
+                routePath: menuObj?.path || '/',
+                pathname,
+                children,
+            } ]);
+        }
+    }
+
+    const tabItems = useMemo(() => {
+        return tabs.map(tab => ({
+            label: (
+                <>
+                    {tab.title}
+                </>
+            ),
+            key: tab.routePath,
+            children: (
+                <div className='px-[16px]'>
+                    {tab.children}
+                </div>
+            ),
+            closable: tabs.length > 1, // 剩最后一个就不能删除了
+        }))
+    }, [ tabs ]);
+
     const token = useTokenStore.getState().token
-    console.log(2222, token, !isPublicPath())
-    if(!isPublicPath() && !token){
+    if (!isPublicPath() && !token) {
         navigate('/login')
     }
 
@@ -34,7 +121,7 @@ export default function BaseLayout() {
         splitMenus: false,
     });
 
-    const [ pathname, setPathname ] = useState('/list/sub-page/sub-sub-page1');
+    const [ layoutPathName, setLayoutPathName ] = useState('/list/sub-page/sub-sub-page1');
     if (typeof document === 'undefined') {
         return <div/>;
     }
@@ -76,11 +163,11 @@ export default function BaseLayout() {
                         ]}
                         menu={{
                             request: async () => {
-                                return await http.get('/api/getMenuList')
+                                return menuStore.menu;
                             },
                         }}
                         location={{
-                            pathname,
+                            pathname: layoutPathName,
                         }}
                         token={{
                             header: {
@@ -140,8 +227,8 @@ export default function BaseLayout() {
                         menuItemRender={(item, dom) => (
                             <div
                                 onClick={() => {
-                                    console.log(333, item)
-                                    setPathname(item.path || '/welcome')
+                                    onTabsChange(item.path || '/welcome')
+                                    setLayoutPathName(item.path || '/welcome')
                                     navigate(item.path || '/welcome')
                                 }}
                             >
@@ -151,17 +238,7 @@ export default function BaseLayout() {
                         {...settings}
                     >
                         <PageContainer
-                            tabList={[
-                                {
-                                    tab: '基本信息',
-                                    key: 'base',
-                                    closable: false,
-                                },
-                                {
-                                    tab: '详细信息',
-                                    key: 'info',
-                                },
-                            ]}
+                            tabList={tabItems}
                             tabProps={{
                                 type: 'editable-card',
                                 hideAdd: true,
@@ -170,14 +247,13 @@ export default function BaseLayout() {
                             token={{
                                 paddingBlockPageContainerContent: 0,
                             }}
+                            onTabChange={onTabsChange}
+                            tabActiveKey={activeKey}
                         >
-                            <Suspense fallback={<Loading/>}>
-                                <Outlet/>
-                            </Suspense>
                         </PageContainer>
 
                         <SettingDrawer
-                            pathname={pathname}
+                            pathname={layoutPathName}
                             enableDarkTheme
                             getContainer={(e: any) => {
                                 if (typeof window === 'undefined') return e;
