@@ -8,6 +8,16 @@ import { MdEditor } from "md-editor-rt";
 import 'md-editor-rt/lib/style.css';
 import http from "@/services/axios.ts";
 
+type SelectType = {
+    label: string,
+    value: number,
+    obj: TagType
+};
+type TagType = {
+    id: number,
+    name: string,
+};
+
 export default function BlogAdd() {
     const [ text, setText ] = useState('');
     return (
@@ -45,10 +55,14 @@ export default function BlogAdd() {
                     name="typeList"
                     label='分类'
                     request={async () => {
-                        const tags = await http.get('/api/type/list');
-                        const tagResp = []
-                        tags.forEach((tag) => {
-                            const obj = {};
+                        const tags = await http.get<TagType[]>('/api/type/list');
+                        const tagResp: SelectType[] = []
+                        tags.forEach((tag: TagType) => {
+                            const obj = {
+                                label: tag.name,
+                                value: tag.id,
+                                obj: tag,
+                            }
                             obj.label = tag.name;
                             obj.value = tag.id;
                             obj.obj = tag;
@@ -63,10 +77,14 @@ export default function BlogAdd() {
                     label='标签'
                     mode='multiple'
                     request={async () => {
-                        const tags = await http.get('/api/tag/list');
-                        const tagResp = []
-                        tags.forEach((tag) => {
-                            const obj = {};
+                        const tags = await http.get<TagType[]>('/api/tag/list');
+                        const tagResp: SelectType[] = []
+                        tags.forEach((tag: TagType) => {
+                            const obj = {
+                                label: tag.name,
+                                value: tag.id,
+                                obj: tag,
+                            }
                             obj.label = tag.name;
                             obj.value = tag.id;
                             obj.obj = tag;
