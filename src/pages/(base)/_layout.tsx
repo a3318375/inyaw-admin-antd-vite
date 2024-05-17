@@ -47,15 +47,16 @@ export default function BaseLayout() {
     }
     if(!routeList.includes(pathname)){
         setRouteList([ ...routeList, pathname ]);
-
         const lastRoute = matches.at(-1);
         const lastRouteName = lastRoute?.pathname !== '/' && lastRoute?.pathname.endsWith("/") ? lastRoute.pathname.substring(0,lastRoute.pathname.length -1): lastRoute?.pathname
-        if(lastRouteName?.includes('/add')){
+        console.log(222, lastRouteName)
+        if(lastRouteName?.startsWith('/article/blog/')){
+        //if(lastRouteName?.includes('/add')){
             const existKeepAliveTab = tabs.find(o => o.routePath === pathname);
             // 如果不存在则需要插入
             if (!existKeepAliveTab) {
                 setTabs([ ...tabs, {
-                    title: '新增',
+                    title: lastRouteName?.includes('/add')?'新增':'编辑',
                     key: new Date().getTime().toString(),
                     routePath: pathname,
                     pathname,

@@ -27,104 +27,103 @@ type GithubIssueItem = {
     closed_at?: string;
 };
 
-const columns: ProColumns<GithubIssueItem>[] = [
-    {
-        dataIndex: 'index',
-        valueType: 'indexBorder',
-        width: 48,
-    },
-    {
-        title: '标题',
-        dataIndex: 'title',
-        ellipsis: true,
-        tooltip: '标题过长会自动收缩',
-        formItemProps: {
-            rules: [
-                {
-                    required: true,
-                    message: '此项为必填项',
-                },
-            ],
-        },
-    },
-    {
-        disable: true,
-        title: '状态',
-        dataIndex: 'status',
-        filters: true,
-        onFilter: true,
-        ellipsis: true,
-        valueType: 'select',
-        valueEnum: {
-            false: {
-                text: '未发布',
-                status: 'Error',
-            },
-            true: {
-                text: '已发布',
-                status: 'Success',
-                disabled: true,
-            },
-        },
-    },
-    {
-        title: '分类',
-        dataIndex: 'type[name]',
-        ellipsis: true,
-    },
-    {
-        title: '创建时间',
-        key: 'showTime',
-        dataIndex: 'createTime',
-        valueType: 'date',
-        sorter: true,
-        hideInSearch: true,
-    },
-    {
-        title: '创建时间',
-        dataIndex: 'created_at',
-        valueType: 'dateRange',
-        hideInTable: true,
-        search: {
-            transform: (value) => {
-                return {
-                    startTime: value[0],
-                    endTime: value[1],
-                };
-            },
-        },
-    },
-    {
-        title: '操作',
-        valueType: 'option',
-        key: 'option',
-        render: (_text, record, _, action) => [
-            <a
-                key="editable"
-                onClick={() => {
-                    action?.startEditable?.(record.id);
-                }}
-            >
-                编辑
-            </a>,
-            <a href={record.url} target="_blank" rel="noopener noreferrer" key="view">
-                查看
-            </a>,
-            <TableDropdown
-                key="actionGroup"
-                onSelect={() => action?.reload()}
-                menus={[
-                    { key: 'copy', name: '复制' },
-                    { key: 'delete', name: '删除' },
-                ]}
-            />,
-        ],
-    },
-];
-
 export default function Blog() {
     const actionRef = useRef<ActionType>();
     const navigate = useNavigate()
+    const columns: ProColumns<GithubIssueItem>[] = [
+        {
+            dataIndex: 'index',
+            valueType: 'indexBorder',
+            width: 48,
+        },
+        {
+            title: '标题',
+            dataIndex: 'title',
+            ellipsis: true,
+            tooltip: '标题过长会自动收缩',
+            formItemProps: {
+                rules: [
+                    {
+                        required: true,
+                        message: '此项为必填项',
+                    },
+                ],
+            },
+        },
+        {
+            disable: true,
+            title: '状态',
+            dataIndex: 'status',
+            filters: true,
+            onFilter: true,
+            ellipsis: true,
+            valueType: 'select',
+            valueEnum: {
+                false: {
+                    text: '未发布',
+                    status: 'Error',
+                },
+                true: {
+                    text: '已发布',
+                    status: 'Success',
+                    disabled: true,
+                },
+            },
+        },
+        {
+            title: '分类',
+            dataIndex: 'type[name]',
+            ellipsis: true,
+        },
+        {
+            title: '创建时间',
+            key: 'showTime',
+            dataIndex: 'createTime',
+            valueType: 'date',
+            sorter: true,
+            hideInSearch: true,
+        },
+        {
+            title: '创建时间',
+            dataIndex: 'created_at',
+            valueType: 'dateRange',
+            hideInTable: true,
+            search: {
+                transform: (value) => {
+                    return {
+                        startTime: value[0],
+                        endTime: value[1],
+                    };
+                },
+            },
+        },
+        {
+            title: '操作',
+            valueType: 'option',
+            key: 'option',
+            render: (_text, record, _, action) => [
+                <a
+                    key="editable"
+                    onClick={() => {
+                        navigate('/article/blog/' + record.id)
+                    }}
+                >
+                    编辑
+                </a>,
+                <a href={record.url} target="_blank" rel="noopener noreferrer" key="view">
+                    查看
+                </a>,
+                <TableDropdown
+                    key="actionGroup"
+                    onSelect={() => action?.reload()}
+                    menus={[
+                        { key: 'copy', name: '复制' },
+                        { key: 'delete', name: '删除' },
+                    ]}
+                />,
+            ],
+        },
+    ];
     return (
         <ProTable<GithubIssueItem>
             columns={columns}

@@ -1,12 +1,13 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
-    ProForm, ProFormSelect, ProFormSwitch,
+    ProForm, ProFormInstance, ProFormSelect, ProFormSwitch,
     ProFormText,
 } from '@ant-design/pro-components';
 import { Form, message } from 'antd';
 import { MdEditor } from "md-editor-rt";
 import 'md-editor-rt/lib/style.css';
 import http from "@/services/axios.ts";
+import { useParams } from "@/router";
 
 type SelectType = {
     label: string,
@@ -20,9 +21,30 @@ type TagType = {
 
 export default function BlogAdd() {
     const [ text, setText ] = useState('');
+    const { id } = useParams('/article/blog/:id')
+    const formRef = useRef<ProFormInstance>();
+    useEffect(() => {
+        (async () => {
+            if (id !== 'add') {
+                const data = await http.get<any>('/api/blog/info', { params: { id: id } });
+                if(data.tagList){
+                    data.tagList = data.tagList.map((obj: { id: any; })=>{
+                        return obj.id
+                    })
+                }
+                if(data.type){
+                    data.type = data.type.id
+                }
+                console.log(111, data)
+                formRef?.current?.setFieldsValue(data)
+                setText(data.article.context)
+            }
+        })();
+    }, []);
     return (
         <ProForm
             title="新建表单"
+            formRef={formRef}
             onFinish={async (values: any) => {
                 console.log(values);
                 message.success('提交成功');
@@ -45,15 +67,12 @@ export default function BlogAdd() {
             />
             <ProForm.Group>
                 <ProFormSelect
-                    options={[
-                        {
-                            value: 'chapter',
-                            label: '盖章后生效',
-                        },
-                    ]}
                     width="md"
-                    name="typeList"
+                    name="type"
                     label='分类'
+                    fieldProps={{
+                        labelInValue: true
+                    }}
                     request={async () => {
                         const tags = await http.get<TagType[]>('/api/type/list');
                         const tagResp: SelectType[] = []
@@ -76,6 +95,9 @@ export default function BlogAdd() {
                     name="tagList"
                     label='标签'
                     mode='multiple'
+                    fieldProps={{
+                        labelInValue: true
+                    }}
                     request={async () => {
                         const tags = await http.get<TagType[]>('/api/tag/list');
                         const tagResp: SelectType[] = []
